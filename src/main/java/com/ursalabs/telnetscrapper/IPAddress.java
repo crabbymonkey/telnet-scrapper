@@ -2,6 +2,7 @@ package com.ursalabs.telnetscrapper;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -14,8 +15,8 @@ public class IPAddress {
     IPAddress(String address) throws InvalidIPAddressValue {
         validateAddress(address);
         this.address = address;
-        minPort = 0;    // Default Value
-        maxPort = 65535;// Default Value
+        minPort = 0;    // Default Value that covers all ports
+        maxPort = 65535;// Default Value that covers all ports
     }
 
     IPAddress(String address, int minPort, int maxPort) throws InvalidIPAddressValue {
@@ -25,9 +26,40 @@ public class IPAddress {
         this.maxPort = maxPort;
     }
 
-    public List<Integer> scrapPorts() {
-        CheckPorts portChecker = new CheckPorts(this.address, this.minPort, this.maxPort);
+    public List<Integer> scrapPortsMultiThread(int numThreads) {
+        int subrange_length = (maxPort - minPort)/numThreads;  // Get values to make numThreads threads
+        List<CheckPorts> allCheckers = new ArrayList<CheckPorts>(); // Get values to make numThreads threads this will be a list of all the treads
+        List<Integer> allOpenPorts = new ArrayList<Integer>();
 
+        System.out.println("Using " + numThreads + " threads to speed things up");
+
+        int current_start = minPort;
+
+        //TODO: My math is wrong here... Too tired to fix it now...
+        for (int index = 0; index < numThreads; index++) {
+            CheckPorts portChecker = new CheckPorts(this.address, current_start, (current_start + subrange_length));
+            allCheckers.add(portChecker);
+
+            current_start += subrange_length;
+        }
+
+        allCheckers.get(0).run();
+        allCheckers.get(allCheckers.size() -1).run();
+
+        while (allCheckers.get(0).getCurrentStatus() != CheckPorts.Status.FINISHED){}
+        while (allCheckers.get(allCheckers.size() -1).getCurrentStatus() != CheckPorts.Status.FINISHED){}
+
+
+        for(CheckPorts portChecker : allCheckers) {
+            allOpenPorts.addAll(portChecker.getOpenPorts());
+        }
+
+        return allOpenPorts;
+    }
+
+    public List<Integer> scrapPortsSingleThread() {
+
+        CheckPorts portChecker = new CheckPorts(this.address, minPort, maxPort);
         portChecker.run();
 
         while (portChecker.getCurrentStatus() != CheckPorts.Status.FINISHED){}

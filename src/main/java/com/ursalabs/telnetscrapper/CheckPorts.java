@@ -4,7 +4,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CheckPorts implements Runnable {
+public class CheckPorts extends Thread {
 
     private final String ip;
     private final int startPort;
@@ -32,8 +32,18 @@ public class CheckPorts implements Runnable {
             if (deviceListening(ip, port)) {
                 openPorts.add(port);
                 System.out.println("OPEN!!!");
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
             } else {
                 System.out.println("Closed");
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
             }
         }
 
