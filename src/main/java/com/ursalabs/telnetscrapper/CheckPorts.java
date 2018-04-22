@@ -10,6 +10,7 @@ public class CheckPorts extends Thread {
     private final int startPort;
     private final int endPort;
     private List<Integer> openPorts = new ArrayList<Integer>();
+    private List<Integer> closedPorts = new ArrayList<Integer>();
     private Status currentStatus;
 
     enum Status {
@@ -32,6 +33,7 @@ public class CheckPorts extends Thread {
                 openPorts.add(port);
                 System.out.println("Port " + port + ": " + "OPEN!!!");
             } else {
+                closedPorts.add(port);
                 System.out.println("Port " + port + ": " + "Closed");
             }
         }
@@ -72,6 +74,10 @@ public class CheckPorts extends Thread {
 
     public List<Integer> getOpenPorts() {
         return openPorts;
+    }
+
+    public List<Integer> getClosedPorts() {
+        return closedPorts;
     }
 
     public String getIp() {

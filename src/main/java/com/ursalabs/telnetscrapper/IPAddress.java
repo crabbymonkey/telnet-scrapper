@@ -2,9 +2,7 @@ package com.ursalabs.telnetscrapper;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class IPAddress {
@@ -27,12 +25,11 @@ public class IPAddress {
         this.maxPort = maxPort;
     }
 
-    public List<Integer> scrapPortsMultiThread(int numThreads) {
+    public Map<String, List<Integer>> scrapPortsMultiThread(int numThreads) {
         int subrange_length = ((maxPort + 1) - minPort) / (numThreads - 1);  // Get values to make numThreads threads (The -1 is to account for the thread that does the overhang values)
         int subrange_length_extra = ((maxPort + 1) - minPort) % numThreads;
         System.out.println("subrange_length_extra: " + subrange_length_extra);
         List<CheckPorts> allCheckers = new ArrayList<CheckPorts>(); // Get values to make numThreads threads this will be a list of all the treads
-        List<Integer> allOpenPorts = new ArrayList<Integer>();
 
         System.out.println("Using " + numThreads + " threads to speed things up");
 
@@ -65,22 +62,18 @@ public class IPAddress {
             }
         }
 
-        for (CheckPorts portChecker : allCheckers) {
-            allOpenPorts.addAll(portChecker.getOpenPorts());
-        }
-
-        return allOpenPorts;
+        return this.getPortsFromThreads(allCheckers);
     }
 
-    public List<Integer> scrapPortsSingleThread() {
+    public Map<String, List<Integer>> scrapPortsSingleThread() {
 
         CheckPorts portChecker = new CheckPorts(this.address, minPort, maxPort);
         portChecker.run();
 
-        while (portChecker.getCurrentStatus() != CheckPorts.Status.FINISHED) {
+        while (portChecker.isAlive()) {
         }
 
-        return portChecker.getOpenPorts();
+        return getPortsFromThreads(Collections.singletonList(portChecker));
     }
 
     private void validateAddress(String address) throws InvalidIPAddressValue {
@@ -144,6 +137,33 @@ public class IPAddress {
             e.printStackTrace();
             return false;
         }
+    }
+
+    private Map<String, List<Integer>> getPortsFromThreads(List<CheckPorts> allCheckers){
+        Map<String, List<Integer>> checkedPorts = new HashMap<String, List<Integer>>();
+
+        // Added the open and closed ports
+        for (CheckPorts portChecker : allCheckers) {
+            if(checkedPorts.isEmpty()) {
+                checkedPorts.put("Open", portChecker.getOpenPorts());
+                checkedPorts.put("Closed", portChecker.getClosedPorts());
+            }
+            else{
+                checkedPorts.get("Open").addAll(portChecker.getOpenPorts());
+                checkedPorts.get("Closed").addAll(portChecker.getClosedPorts());
+            }
+        }
+
+        // Find if any ports are missing
+        List<Integer> missingPorts = new ArrayList<Integer>();
+        for(int index = minPort; index >= maxPort; index++){
+            if (!checkedPorts.get("Open").contains(index) && !checkedPorts.get("Closed").contains(index)) {
+                missingPorts.add(index);
+            }
+        }
+        checkedPorts.put("Missing", missingPorts);
+
+        return checkedPorts;
     }
 
     public String getAddress() {
