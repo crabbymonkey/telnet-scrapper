@@ -9,7 +9,7 @@ import java.util.Scanner;
 public class TelnetScrapper {
 
     static int MIN_PORT_NUMBER = 0;       // Full range start
-    static int MAX_PORT_NUMBER = 65535;   // Full range end
+    static int MAX_PORT_NUMBER = 1000;   // Full range end
 
     public static void main(String[] args) {
         if (MIN_PORT_NUMBER > MAX_PORT_NUMBER) {
@@ -26,8 +26,8 @@ public class TelnetScrapper {
 
             System.out.println("\n\nScrapping the ports between " + MIN_PORT_NUMBER + " and " + MAX_PORT_NUMBER + " for " + ip.getAddress() + " this may take some time...");
 
-//            checkedPorts = ip.scrapPortsMultiThread(100);
-            checkedPorts = ip.scrapPortsSingleThread();
+            checkedPorts = ip.scrapPortsMultiThread(100);
+//            checkedPorts = ip.scrapPortsSingleThread();
 
             if (!checkedPorts.get("Missing").isEmpty()) {
                 System.out.println("\nThe following ports where skipped for the device with IP address " + ip.getAddress() + ":");
@@ -48,6 +48,16 @@ public class TelnetScrapper {
             invalidIPAddressValue.printStackTrace();
         }
 
+    }
+
+    public static Map<String, List<Integer>> scrapAllPortsForIpAddress(String ipAddress) throws IPAddress.InvalidIPAddressValue {
+        IPAddress ip = new IPAddress(ipAddress, MIN_PORT_NUMBER, MAX_PORT_NUMBER);
+        return ip.scrapPortsMultiThread(100);
+    }
+
+    public static Map<String, List<Integer>> scrapPortsForIpAddress(String ipAddress, int startingPort, int endingPort) throws IPAddress.InvalidIPAddressValue {
+        IPAddress ip = new IPAddress(ipAddress, startingPort, endingPort);
+        return ip.scrapPortsMultiThread(100);
     }
 
 }
