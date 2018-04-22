@@ -2,12 +2,40 @@ package com.ursalabs.telnetscrapper;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.List;
+import java.util.ListIterator;
 
 public class IPAddress {
 
     private String address;
+    private final int minPort;
+    private final int maxPort;
 
     IPAddress(String address) throws InvalidIPAddressValue {
+        validateAddress(address);
+        this.address = address;
+        minPort = 0;    // Default Value
+        maxPort = 65535;// Default Value
+    }
+
+    IPAddress(String address, int minPort, int maxPort) throws InvalidIPAddressValue {
+        validateAddress(address);
+        this.address = address;
+        this.minPort = minPort;
+        this.maxPort = maxPort;
+    }
+
+    public List<Integer> scrapPorts() {
+        CheckPorts portChecker = new CheckPorts(this.address, this.minPort, this.maxPort);
+
+        portChecker.run();
+
+        while (portChecker.getCurrentStatus() != CheckPorts.Status.FINISHED){}
+
+        return portChecker.getOpenPorts();
+    }
+
+    private void validateAddress(String address) throws InvalidIPAddressValue {
         if (!validIP(address)) {
             throw new InvalidIPAddressValue("Invalid address format");
         }
@@ -15,7 +43,6 @@ public class IPAddress {
         if (!deviceIsReachable(address)) {
             throw new InvalidIPAddressValue("Connection timed out address is most likely not reachable");
         }
-        this.address = address;
     }
 
     /**

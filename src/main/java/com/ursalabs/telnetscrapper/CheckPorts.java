@@ -6,9 +6,9 @@ import java.util.List;
 
 public class CheckPorts implements Runnable {
 
-    private String ip;
-    private int startPort;
-    private int endPort;
+    private final String ip;
+    private final int startPort;
+    private final int endPort;
     private List<Integer> openPorts = new ArrayList<Integer>();
     private Status currentStatus;
 
@@ -75,20 +75,8 @@ public class CheckPorts implements Runnable {
         return openPorts;
     }
 
-    public void setEndPort(int endPort) {
-        this.endPort = endPort;
-    }
-
-    public void setStartPort(int startPort) {
-        this.startPort = startPort;
-    }
-
     public String getIp() {
         return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
     }
 
     public Status getCurrentStatus() {
