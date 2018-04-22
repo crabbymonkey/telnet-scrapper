@@ -15,7 +15,8 @@ public class IPAddress {
         validateAddress(address);
         this.address = address;
         minPort = 0;    // Default Value that covers all ports
-        maxPort = 65535;// Default Value that covers all ports
+//        maxPort = 65535;// Default Value that covers all ports
+        maxPort = 1000;
     }
 
     IPAddress(String address, int minPort, int maxPort) throws InvalidIPAddressValue {
@@ -33,6 +34,8 @@ public class IPAddress {
 
         int current_start = minPort;
 
+
+        System.out.println("\nScrapping the ports between " + minPort + " and " + maxPort + " for " + address + " this may take some time...");
         bar.start();
 
         //TODO: Unit test that makes sure it does all outputs

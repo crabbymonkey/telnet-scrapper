@@ -8,38 +8,27 @@ import java.util.Scanner;
 
 public class TelnetScrapper {
 
-    static int MIN_PORT_NUMBER = 0;       // Full range start
-    static int MAX_PORT_NUMBER = 1000;   // Full range end
-
     public static void main(String[] args) {
-        if (MIN_PORT_NUMBER > MAX_PORT_NUMBER) {
-            System.out.println("The MIN_PORT_NUMBER cannot be larger than the MAX_PORT_NUMBER!");
-            return;
-        }
-        Scanner reader = new Scanner(System.in);
         Map<String, List<Integer>> checkedPorts;
 
         System.out.print("Please provide the IP address you would like to scrape: ");
+        String address = new Scanner(System.in).nextLine();
+
 
         try {
-            IPAddress ip = new IPAddress(reader.nextLine(), MIN_PORT_NUMBER, MAX_PORT_NUMBER);
-
-            System.out.println("\n\nScrapping the ports between " + MIN_PORT_NUMBER + " and " + MAX_PORT_NUMBER + " for " + ip.getAddress() + " this may take some time...");
-
-            checkedPorts = ip.scrapPortsMultiThread(100);
-//            checkedPorts = ip.scrapPortsSingleThread();
+            checkedPorts = scrapAllPortsForIpAddress(address);
 
             if (!checkedPorts.get("Missing").isEmpty()) {
-                System.out.println("\nThe following ports where skipped for the device with IP address " + ip.getAddress() + ":");
+                System.out.println("\nThe following ports where skipped for the device with IP address " + address + ":");
                 for (int port : checkedPorts.get("Missing")) {
                     System.out.println(port);
                 }
             }
 
             if (checkedPorts.get("Open") == null || checkedPorts.get("Open").isEmpty()) {
-                System.out.println("No ports are being used for the device with IP address " + ip.getAddress());
+                System.out.println("No ports are being used for the device with IP address " + address);
             } else {
-                System.out.println("\nThe following ports are in use for the device with IP address " + ip.getAddress() + ":");
+                System.out.println("\nThe following ports are in use for the device with IP address " + address + ":");
                 for (int port : checkedPorts.get("Open")) {
                     System.out.println(port);
                 }
@@ -51,7 +40,7 @@ public class TelnetScrapper {
     }
 
     public static Map<String, List<Integer>> scrapAllPortsForIpAddress(String ipAddress) throws IPAddress.InvalidIPAddressValue {
-        IPAddress ip = new IPAddress(ipAddress, MIN_PORT_NUMBER, MAX_PORT_NUMBER);
+        IPAddress ip = new IPAddress(ipAddress);
         return ip.scrapPortsMultiThread(100);
     }
 
