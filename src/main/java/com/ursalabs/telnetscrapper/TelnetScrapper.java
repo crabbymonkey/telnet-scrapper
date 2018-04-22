@@ -51,14 +51,42 @@ public class TelnetScrapper {
 
     }
 
-    public static Map<String, List<Integer>> scrapAllPortsForIpAddress(String ipAddress, int numThreads) throws IPAddress.InvalidIPAddressValue {
+    /**
+     * Runs the port scrapper for all ports against a single device. This will run it from port 0 to port 65535.
+     *
+     * @param ipAddress the value to check if it is am IP address.
+     * @param numThreads the number of threads you would like to create. If you would like to run it without using threads you can provide null or a value less than or equal to 1 to this field.
+     * @return A Hashmap<String, List<Integer>> that will have the keys "Open", "Closed" and "Missing". The Open list will be all the ports that are Open for the device, Closed will be all the closed ports and the Missing list is all the ports that were not checked (this should be empty).
+     *
+     * @throws IPAddress.InvalidIPAddressValue error if there is something wrong with the given parameters check the message to see what went wrong
+     */
+    public static Map<String, List<Integer>> scrapAllPortsForIpAddress(String ipAddress, Integer numThreads) throws IPAddress.InvalidIPAddressValue {
         IPAddress ip = new IPAddress(ipAddress);
-        return ip.scrapPortsMultiThread(numThreads);
+        return runScrapper(ip, numThreads);
     }
 
-    public static Map<String, List<Integer>> scrapPortsForIpAddress(String ipAddress, int startingPort, int endingPort, int numThreads) throws IPAddress.InvalidIPAddressValue {
+    /**
+     * Runs the port scrapper for the given starting and ending ports against a single device.
+     *
+     * @param ipAddress the value to check if it is am IP address.
+     * @param startingPort the port you would like to start scanning at.
+     * @param endingPort the port you would like to stop scanning at.
+     * @param numThreads the number of threads you would like to create. If you would like to run it without using threads you can provide null or a value less than or equal to 1 to this field.
+     * @return A Hashmap<String, List<Integer>> that will have the keys "Open", "Closed" and "Missing". The Open list will be all the ports that are Open for the device, Closed will be all the closed ports and the Missing list is all the ports that were not checked (this should be empty).
+     *
+     * @throws IPAddress.InvalidIPAddressValue error if there is something wrong with the given parameters check the message to see what went wrong
+     */
+    public static Map<String, List<Integer>> scrapPortsForIpAddress(String ipAddress, int startingPort, int endingPort, Integer numThreads) throws IPAddress.InvalidIPAddressValue {
         IPAddress ip = new IPAddress(ipAddress, startingPort, endingPort);
-        return ip.scrapPortsMultiThread(numThreads);
+        return runScrapper(ip, numThreads);
+    }
+
+    private static Map<String, List<Integer>> runScrapper(IPAddress ip, Integer numThreads) {
+        if (numThreads == null || numThreads <= 1) {
+            return ip.scrapPortsSingleThread();
+        } else {
+            return ip.scrapPortsMultiThread(numThreads);
+        }
     }
 
 }
