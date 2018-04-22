@@ -10,8 +10,8 @@ public class TelnetScrapper {
 
     public static void main(String[] args) {
         Map<String, List<Integer>> checkedPorts;
-        int startPort = 0;
-        int endPort = 1000;
+        int startPort = 0;  // Full port range is 1000
+        int endPort = 1000; // Full port range is 65535
 
         // Get IP address from user
         System.out.print("Please provide the IP address you would like to scrape: ");
