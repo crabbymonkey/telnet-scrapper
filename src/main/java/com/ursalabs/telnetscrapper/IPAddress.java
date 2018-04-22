@@ -28,12 +28,12 @@ public class IPAddress {
     public Map<String, List<Integer>> scrapPortsMultiThread(int numThreads) {
         int subrange_length = ((maxPort + 1) - minPort) / (numThreads - 1);  // Get values to make numThreads threads (The -1 is to account for the thread that does the overhang values)
         int subrange_length_extra = ((maxPort + 1) - minPort) % numThreads;
-        System.out.println("subrange_length_extra: " + subrange_length_extra);
         List<CheckPorts> allCheckers = new ArrayList<CheckPorts>(); // Get values to make numThreads threads this will be a list of all the treads
-
-        System.out.println("Using " + numThreads + " threads to speed things up");
+        ProgressBar bar = new ProgressBar();
 
         int current_start = minPort;
+
+        bar.start();
 
         //TODO: Unit test that makes sure it does all outputs
         //TODO: I think there is an issue with making an extra thread because of the numThreads - 1 used in calculation above
@@ -58,20 +58,31 @@ public class IPAddress {
             try {
                 portChecker.join();
             } catch (InterruptedException e) {
+                bar.stopShowingProgressError();
                 e.printStackTrace();
             }
         }
+
+        bar.stopShowingProgressSuccess();
 
         return this.getPortsFromThreads(allCheckers);
     }
 
     public Map<String, List<Integer>> scrapPortsSingleThread() {
-
+        ProgressBar bar = new ProgressBar();
         CheckPorts portChecker = new CheckPorts(this.address, minPort, maxPort);
-        portChecker.run();
 
-        while (portChecker.isAlive()) {
+        bar.start();
+        portChecker.start();
+
+        try {
+            portChecker.join();
+        } catch (InterruptedException e) {
+            bar.stopShowingProgressError();
+            e.printStackTrace();
         }
+
+        bar.stopShowingProgressSuccess();
 
         return getPortsFromThreads(Collections.singletonList(portChecker));
     }
@@ -139,16 +150,15 @@ public class IPAddress {
         }
     }
 
-    private Map<String, List<Integer>> getPortsFromThreads(List<CheckPorts> allCheckers){
+    private Map<String, List<Integer>> getPortsFromThreads(List<CheckPorts> allCheckers) {
         Map<String, List<Integer>> checkedPorts = new HashMap<String, List<Integer>>();
 
         // Added the open and closed ports
         for (CheckPorts portChecker : allCheckers) {
-            if(checkedPorts.isEmpty()) {
+            if (checkedPorts.isEmpty()) {
                 checkedPorts.put("Open", portChecker.getOpenPorts());
                 checkedPorts.put("Closed", portChecker.getClosedPorts());
-            }
-            else{
+            } else {
                 checkedPorts.get("Open").addAll(portChecker.getOpenPorts());
                 checkedPorts.get("Closed").addAll(portChecker.getClosedPorts());
             }
@@ -156,7 +166,7 @@ public class IPAddress {
 
         // Find if any ports are missing
         List<Integer> missingPorts = new ArrayList<Integer>();
-        for(int index = minPort; index >= maxPort; index++){
+        for (int index = minPort; index >= maxPort; index++) {
             if (!checkedPorts.get("Open").contains(index) && !checkedPorts.get("Closed").contains(index)) {
                 missingPorts.add(index);
             }

@@ -31,10 +31,10 @@ public class CheckPorts extends Thread {
         for (int port = startPort; port < endPort; port++) {
             if (deviceListening(ip, port)) {
                 openPorts.add(port);
-                System.out.println("Port " + port + ": " + "OPEN!!!");
+//                System.out.println("Port " + port + ": " + "OPEN!!!");
             } else {
                 closedPorts.add(port);
-                System.out.println("Port " + port + ": " + "Closed");
+//                System.out.println("Port " + port + ": " + "Closed");
             }
         }
 
@@ -49,19 +49,13 @@ public class CheckPorts extends Thread {
      * @return True if the host is listening to the port
      */
     private static boolean deviceListening(String host, int port) {
-        Socket s = null;
+        // Assume no connection is possible.
         try {
-            s = new Socket(host, port);
+            (new Socket(host, port)).close();
             return true;
         } catch (Exception e) {
-            return false;
-        } finally {
-            if (s != null)
-                try {
-                    s.close();
-                } catch (Exception e) {
-                }
         }
+        return false;
     }
 
     public int getEndPort() {

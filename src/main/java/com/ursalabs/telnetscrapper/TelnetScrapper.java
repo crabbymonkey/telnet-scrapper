@@ -26,8 +26,8 @@ public class TelnetScrapper {
 
             System.out.println("\n\nScrapping the ports between " + MIN_PORT_NUMBER + " and " + MAX_PORT_NUMBER + " for " + ip.getAddress() + " this may take some time...");
 
-            checkedPorts = ip.scrapPortsMultiThread(100);
-//            checkedPorts = ip.scrapPortsSingleThread();
+//            checkedPorts = ip.scrapPortsMultiThread(100);
+            checkedPorts = ip.scrapPortsSingleThread();
 
             if (!checkedPorts.get("Missing").isEmpty()) {
                 System.out.println("\nThe following ports where skipped for the device with IP address " + ip.getAddress() + ":");
@@ -48,8 +48,6 @@ public class TelnetScrapper {
             invalidIPAddressValue.printStackTrace();
         }
 
-
     }
-
 
 }
