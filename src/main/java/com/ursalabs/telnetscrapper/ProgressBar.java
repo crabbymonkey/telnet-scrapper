@@ -2,13 +2,17 @@ package com.ursalabs.telnetscrapper;
 
 class ProgressBar extends Thread {
     private boolean showProgress = true;
+
     public void run() {
-        String anim= "|/-\\";
+        String anim = "|/-\\";
         int x = 0;
         while (showProgress) {
             System.out.print("\r[" + anim.charAt(x++ % anim.length()) + "] Scanning Ports");
-            try { Thread.sleep(100); }
-            catch (Exception e) {};
+            try {
+                Thread.sleep(100);
+            } catch (Exception e) {
+            }
+            ;
         }
     }
 
@@ -19,6 +23,6 @@ class ProgressBar extends Thread {
 
     public void stopShowingProgressError() {
         showProgress = false;
-        System.out.println("\r[x] Scanning Ports (Error)");
+        System.out.println("\r[x] Scanning Ports (error)");
     }
 }

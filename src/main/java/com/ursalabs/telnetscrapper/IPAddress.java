@@ -15,11 +15,13 @@ public class IPAddress {
         validateAddress(address);
         this.address = address;
         minPort = 0;    // Default Value that covers all ports
-//        maxPort = 65535;// Default Value that covers all ports
-        maxPort = 1000;
+        maxPort = 65535;// Default Value that covers all ports
     }
 
     IPAddress(String address, int minPort, int maxPort) throws InvalidIPAddressValue {
+        if (minPort > maxPort) {
+            throw new InvalidIPAddressValue("The starting port cannot be lower than the ending port.");
+        }
         validateAddress(address);
         this.address = address;
         this.minPort = minPort;
@@ -30,13 +32,8 @@ public class IPAddress {
         int subrange_length = ((maxPort + 1) - minPort) / (numThreads - 1);  // Get values to make numThreads threads (The -1 is to account for the thread that does the overhang values)
         int subrange_length_extra = ((maxPort + 1) - minPort) % numThreads;
         List<CheckPorts> allCheckers = new ArrayList<CheckPorts>(); // Get values to make numThreads threads this will be a list of all the treads
-        ProgressBar bar = new ProgressBar();
 
         int current_start = minPort;
-
-
-        System.out.println("\nScrapping the ports between " + minPort + " and " + maxPort + " for " + address + " this may take some time...");
-        bar.start();
 
         //TODO: Unit test that makes sure it does all outputs
         //TODO: I think there is an issue with making an extra thread because of the numThreads - 1 used in calculation above
@@ -61,31 +58,23 @@ public class IPAddress {
             try {
                 portChecker.join();
             } catch (InterruptedException e) {
-                bar.stopShowingProgressError();
                 e.printStackTrace();
             }
         }
-
-        bar.stopShowingProgressSuccess();
 
         return this.getPortsFromThreads(allCheckers);
     }
 
     public Map<String, List<Integer>> scrapPortsSingleThread() {
-        ProgressBar bar = new ProgressBar();
         CheckPorts portChecker = new CheckPorts(this.address, minPort, maxPort);
 
-        bar.start();
         portChecker.start();
 
         try {
             portChecker.join();
         } catch (InterruptedException e) {
-            bar.stopShowingProgressError();
             e.printStackTrace();
         }
-
-        bar.stopShowingProgressSuccess();
 
         return getPortsFromThreads(Collections.singletonList(portChecker));
     }
