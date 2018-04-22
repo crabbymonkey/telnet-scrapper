@@ -28,22 +28,11 @@ public class CheckPorts extends Thread {
         this.currentStatus = Status.RUNNING;
 
         for (int port = startPort; port < endPort; port++) {
-            System.out.print("Checking port " + port + ": ");
             if (deviceListening(ip, port)) {
                 openPorts.add(port);
-                System.out.println("OPEN!!!");
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+                System.out.println("Port " + port + ": " + "OPEN!!!");
             } else {
-                System.out.println("Closed");
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+                System.out.println("Port " + port + ": " + "Closed");
             }
         }
 

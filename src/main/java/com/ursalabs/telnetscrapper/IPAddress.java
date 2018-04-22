@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.TimeUnit;
 
 public class IPAddress {
 
@@ -27,7 +28,9 @@ public class IPAddress {
     }
 
     public List<Integer> scrapPortsMultiThread(int numThreads) {
-        int subrange_length = (maxPort - minPort)/numThreads;  // Get values to make numThreads threads
+        int subrange_length = ((maxPort + 1) - minPort) / (numThreads - 1);  // Get values to make numThreads threads (The -1 is to account for the thread that does the overhang values)
+        int subrange_length_extra = ((maxPort + 1) - minPort) % numThreads;
+        System.out.println("subrange_length_extra: " + subrange_length_extra);
         List<CheckPorts> allCheckers = new ArrayList<CheckPorts>(); // Get values to make numThreads threads this will be a list of all the treads
         List<Integer> allOpenPorts = new ArrayList<Integer>();
 
@@ -35,22 +38,34 @@ public class IPAddress {
 
         int current_start = minPort;
 
-        //TODO: My math is wrong here... Too tired to fix it now...
+        //TODO: Unit test that makes sure it does all outputs
+        //TODO: I think there is an issue with making an extra thread because of the numThreads - 1 used in calculation above
         for (int index = 0; index < numThreads; index++) {
             CheckPorts portChecker = new CheckPorts(this.address, current_start, (current_start + subrange_length));
             allCheckers.add(portChecker);
+            portChecker.start();
 
             current_start += subrange_length;
         }
 
-        allCheckers.get(0).run();
-        allCheckers.get(allCheckers.size() -1).run();
+        // Start that last thread
+        if (subrange_length_extra > 0) {
+            CheckPorts portChecker = new CheckPorts(this.address, current_start, (current_start + subrange_length_extra));
+            allCheckers.add(portChecker);
+            portChecker.start();
+        }
 
-        while (allCheckers.get(0).getCurrentStatus() != CheckPorts.Status.FINISHED){}
-        while (allCheckers.get(allCheckers.size() -1).getCurrentStatus() != CheckPorts.Status.FINISHED){}
+        // Join the threads so we can wait for all of them to end
+        // Note: this has to be in a loop separate to the start or you will just get one at a time
+        for (CheckPorts portChecker : allCheckers) {
+            try {
+                portChecker.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 
-
-        for(CheckPorts portChecker : allCheckers) {
+        for (CheckPorts portChecker : allCheckers) {
             allOpenPorts.addAll(portChecker.getOpenPorts());
         }
 
@@ -62,7 +77,8 @@ public class IPAddress {
         CheckPorts portChecker = new CheckPorts(this.address, minPort, maxPort);
         portChecker.run();
 
-        while (portChecker.getCurrentStatus() != CheckPorts.Status.FINISHED){}
+        while (portChecker.getCurrentStatus() != CheckPorts.Status.FINISHED) {
+        }
 
         return portChecker.getOpenPorts();
     }

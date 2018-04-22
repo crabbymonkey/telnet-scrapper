@@ -7,15 +7,15 @@ import java.util.Scanner;
 
 public class TelnetScrapper {
 
-//    static int MIN_PORT_NUMBER = 0;       // Full range start
-//    static int MAX_PORT_NUMBER = 65535;   // Full range end
+    static int MIN_PORT_NUMBER = 0;       // Full range start
+    static int MAX_PORT_NUMBER = 65535;   // Full range end
 
-    static int MIN_PORT_NUMBER = 75;    // Test sample start
-    static int MAX_PORT_NUMBER = 1000;   // Test sample end
+//    static int MIN_PORT_NUMBER = 0;    // Test sample start
+//    static int MAX_PORT_NUMBER = 1000;   // Test sample end
 
     public static void main(String[] args) {
         if (MIN_PORT_NUMBER > MAX_PORT_NUMBER) {
-            System.out.println("The MIN_PORT_NUMBER cannot be larget than the MAX_PORT_NUMBER!");
+            System.out.println("The MIN_PORT_NUMBER cannot be larger than the MAX_PORT_NUMBER!");
             return;
         }
         Scanner reader = new Scanner(System.in);
